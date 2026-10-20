@@ -175,10 +175,10 @@
             100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Card အတွင်း ကွက်လပ်နေရာလွတ်အနှံ့ ပိုမိုလွတ်လပ်စွာ ရွေ့လျားစေရန် */
+        /* Screen ပေါ်တွင် အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားစေရန် */
         .escaped-btn {
-            position: absolute !important;
-            z-index: 99;
+            position: fixed !important;
+            z-index: 99999;
             transition: all 0.15s ease-out;
         }
 
@@ -1190,20 +1190,19 @@
             const noBtn = document.getElementById(`btn-no-prev-${stepNum}`);
             const noWrapper = document.getElementById(`btn-no-wrapper-prev-${stepNum}`);
             const yesBtn = document.getElementById(`btn-yes-prev-${stepNum}`);
-            const cardEl = document.getElementById(`prev-step-${stepNum}`);
 
-            if (!noBtn || !noWrapper || !cardEl) return;
+            if (!noBtn || !noWrapper) return;
 
             // Remove existing listeners
             const newNoBtn = noBtn.cloneNode(true);
             noBtn.parentNode.replaceChild(newNoBtn, noBtn);
 
-            // 1. FLEEING (Card အတွင်း နေရာလွတ်အနှံ့ ပိုမိုလွတ်လပ်စွာ ရွေ့လျားရန်)
+            // 1. FLEEING (Screen ပေါ်တွင် အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားရန်)
             if (behavior === 'fleeing') {
                 const triggerFlee = (e) => {
                     if (e && e.type === 'touchstart') e.preventDefault();
                     showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
-                    moveButtonInsideCardFull(newNoBtn, cardEl);
+                    moveButtonSafeScreen(newNoBtn);
                 };
                 newNoBtn.addEventListener('mouseenter', triggerFlee);
                 newNoBtn.addEventListener('touchstart', triggerFlee);
@@ -1242,7 +1241,7 @@
                 newNoBtn.onclick = () => { handleYesClick(nextTarget); };
             }
 
-            // 4. TELEPORT / REAPPEARING (Card အတွင်း နေရာအနှံ့ ပေါ်လာစေရန်)
+            // 4. TELEPORT / REAPPEARING (Screen ပေါ်တွင် လုံခြုံစွာ နေရာအနှံ့ ပေါ်လာရန်)
             else if (behavior === 'teleport') {
                 stateTeleportCounts[stepNum] = 0;
                 const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
@@ -1251,7 +1250,7 @@
                     stateTeleportCounts[stepNum]++;
                     const text = teleTexts[stateTeleportCounts[stepNum] % teleTexts.length];
                     newNoBtn.innerText = text;
-                    moveButtonInsideCardFull(newNoBtn, cardEl);
+                    moveButtonSafeScreen(newNoBtn);
                 };
             }
 
@@ -1351,17 +1350,20 @@
             }
         }
 
-        // ကတ်ပြားအတွင်း အပေါ်ဆုံးကနေ အောက်ဆုံးအထိ လွတ်လပ်စွာ ရွေ့လျားစေသည့် ဖန်ရှင်
-        function moveButtonInsideCardFull(btnEl, cardEl) {
+        // Screen ၏ မြင်ကွင်းအတွင်း လုံးဝမပျောက်ဘဲ အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားစေသည့် ဖန်ရှင်
+        function moveButtonSafeScreen(btnEl) {
             if (!btnEl.classList.contains('escaped-btn')) {
                 btnEl.classList.add('escaped-btn');
             }
-            const cardRect = cardEl.getBoundingClientRect();
-            const maxX = cardRect.width - btnEl.offsetWidth - 25;
-            const maxY = cardRect.height - btnEl.offsetHeight - 25;
+            const btnWidth = btnEl.offsetWidth || 120;
+            const btnHeight = btnEl.offsetHeight || 50;
+            const padding = 20;
 
-            const randomX = Math.max(15, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(25, Math.floor(Math.random() * maxY));
+            const maxX = Math.max(padding, window.innerWidth - btnWidth - padding);
+            const maxY = Math.max(padding, window.innerHeight - btnHeight - padding);
+
+            const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
+            const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
 
             btnEl.style.left = `${randomX}px`;
             btnEl.style.top = `${randomY}px`;
@@ -1505,553 +1507,3 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.15), inset 0 0 20px rgba(255,255,255,0.6);
             text-align: center; width: 100%; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 2px solid rgba(255, 255, 255, 0.8); transition: all 0.4s ease; position: relative;
-        }
-
-        .env-glass { background: rgba(255, 255, 255, 0.75); color: #be123c; }
-        .env-romantic-red { background: linear-gradient(135deg, rgba(225, 29, 72, 0.9), rgba(159, 18, 57, 0.95)); color: #ffffff; border-color: rgba(254, 205, 211, 0.5); }
-        .env-pastel-pink { background: rgba(252, 231, 243, 0.92); color: #9d174d; border-color: rgba(244, 114, 182, 0.6); }
-        .env-classic-gold { background: linear-gradient(135deg, rgba(254, 243, 199, 0.92), rgba(253, 230, 138, 0.95)); color: #78350f; border-color: rgba(245, 158, 11, 0.5); }
-        .env-dark-velvet { background: linear-gradient(135deg, rgba(30, 27, 75, 0.92), rgba(15, 23, 42, 0.95)); color: #f43f5e; border-color: rgba(244, 63, 94, 0.4); }
-
-        .step { display: none; flex-direction: column; align-items: center; gap: 22px; animation: fadeIn 0.4s ease-in-out forwards; }
-        .step.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        img.gif-box { width: 180px; height: 180px; object-fit: cover; border-radius: 22px; box-shadow: 0 10px 25px rgba(220,38,38,0.2); border: 4px solid rgba(255,255,255,0.9); }
-        
-        .btn-group { display: flex; justify-content: center; align-items: center; gap: 20px; width: 100%; min-height: 110px; position: relative; padding: 10px; }
-        
-        .btn-custom-yes {
-            padding: 14px 34px; font-weight: 800; border-radius: 50px; cursor: pointer;
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
-            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4); border: none; display: inline-flex; justify-content: center; align-items: center; z-index: 5;
-        }
-        .btn-custom-yes:hover { transform: translateY(-3px) scale(1.06); }
-
-        .btn-custom-no {
-            padding: 14px 34px; font-weight: 800; border-radius: 50px; cursor: pointer;
-            transition: transform 0.25s, box-shadow 0.25s, opacity 0.3s;
-            box-shadow: 0 8px 25px rgba(106, 17, 203, 0.4); border: none; display: inline-flex; justify-content: center; align-items: center; z-index: 5;
-        }
-
-        .btn-no-wrapper { position: relative; display: inline-flex; justify-content: center; align-items: center; }
-        
-        .popup-warning {
-            position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: rgba(255, 228, 230, 0.95);
-            color: #e11d48; border: 2px solid #f43f5e; padding: 8px 14px; border-radius: 12px; font-size: 0.85rem;
-            font-weight: 700; white-space: nowrap; box-shadow: 0 6px 18px rgba(225, 29, 72, 0.25); z-index: 10000;
-            pointer-events: none; backdrop-filter: blur(4px); animation: popupBounce 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .popup-warning::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #f43f5e transparent transparent transparent; }
-        @keyframes popupBounce { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
-        
-        .escaped-btn { position: absolute !important; z-index: 99; transition: all 0.15s ease-out; }
-
-        @keyframes orbitAnimation { 0% { transform: rotate(0deg) translateX(70px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(70px) rotate(-360deg); } }
-        .orbiting-btn { animation: orbitAnimation 2.2s linear infinite; }
-
-        @keyframes gravityFallAnim { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(600px) rotate(180deg); opacity: 0; } }
-        .falling-btn { animation: gravityFallAnim 1.2s ease-in forwards !important; }
-
-        .split-letter-particle { position: absolute; font-weight: 900; color: #ec4899; font-size: 1.5rem; pointer-events: none; z-index: 10000; transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-
-        .falling-envelope-container {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 20px; user-select: none;
-            animation: fallAndSway 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards, floatGentle 2.6s ease-in-out infinite 3.2s;
-        }
-        @keyframes fallAndSway { 0% { transform: translateY(-280px) rotate(-18deg); opacity: 0; } 30% { transform: translateY(-120px) rotate(14deg); opacity: 1; } 60% { transform: translateY(20px) rotate(-10deg); } 85% { transform: translateY(-8px) rotate(6deg); } 100% { transform: translateY(0px) rotate(0deg); opacity: 1; } }
-        @keyframes floatGentle { 0%, 100% { transform: translateY(0px) rotate(-4deg); } 50% { transform: translateY(-14px) rotate(4deg); } }
-        .no-frame-gif { width: 210px; height: auto; background: transparent !important; filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.22)); transition: transform 0.3s ease; }
-        .falling-envelope-container:hover .no-frame-gif { transform: scale(1.08); }
-        .tap-hint-badge { margin-top: 18px; background: rgba(255, 255, 255, 0.88); color: #be123c; font-weight: 700; font-size: 1.05rem; padding: 8px 20px; border-radius: 30px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); border: 1.5px solid rgba(255, 255, 255, 0.9); animation: pulseHint 1.6s infinite ease-in-out; }
-        @keyframes pulseHint { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } }
-        
-        .paper-letter-wrapper { position: relative; width: 100%; max-width: 380px; margin: 0 auto; padding: 10px; display: flex; justify-content: center; align-items: center; z-index: 10; }
-        .paper-letter-pop { animation: popInLetter 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes popInLetter { 0% { opacity: 0; transform: scale(0.3) rotate(-12deg); } 70% { transform: scale(1.04) rotate(-2deg); } 100% { opacity: 1; transform: scale(1) rotate(-2deg); } }
-        
-        .paper-sheet { position: relative; width: 100%; padding: 32px 22px 28px 22px; border-radius: 16px; box-shadow: -8px 15px 35px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.8); }
-        
-        .paper-classic { background-color: rgba(255, 253, 248, 0.96); color: #2b2b2b; }
-        .paper-classic .letter-title { color: #b91c1c; border-bottom: 2px dashed #fca5a5; }
-        .paper-classic .letter-signature { color: #9f1239; }
-
-        .paper-rose { background-color: rgba(255, 241, 242, 0.97); color: #881337; }
-        .paper-rose .letter-title { color: #be123c; border-bottom: 2px dashed #fda4af; }
-        .paper-rose .letter-signature { color: #e11d48; }
-
-        .paper-vintage { background-color: rgba(254, 243, 199, 0.97); color: #451a03; border-color: #fde68a; }
-        .paper-vintage .letter-title { color: #78350f; border-bottom: 2px dashed #fcd34d; }
-        .paper-vintage .letter-signature { color: #92400e; }
-
-        .paper-grid { background-color: rgba(255, 255, 255, 0.97); color: #1e293b; background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 16px 16px; }
-        .paper-grid .letter-title { color: #0284c7; border-bottom: 2px dashed #38bdf8; }
-        .paper-grid .letter-signature { color: #0369a1; }
-
-        .paper-dark { background-color: rgba(15, 23, 42, 0.96); color: #f1f5f9; border-color: #334155; }
-        .paper-dark .letter-title { color: #fb7185; border-bottom: 2px dashed #f43f5e; }
-        .paper-dark .letter-signature { color: #fda4af; }
-
-        .paperclip { position: absolute; top: 12px; right: 28px; width: 18px; height: 45px; border: 3px solid #4a4a4a; border-radius: 12px; z-index: 6; transform: rotate(8deg); }
-        .letter-content { font-family: 'Pyidaungsu', sans-serif; line-height: 1.8; font-size: 0.95rem; text-align: left; }
-        .letter-title { text-align: center; font-size: 1.3rem; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; }
-        .letter-signature { text-align: right; margin-top: 18px; font-weight: 700; font-size: 1rem; }
-    </style>
-</head>
-<body>
-    <div class="card-container" id="app-card-container">
-        <!-- Dynamic Steps Rendered via JS -->
-    </div>
-
-    <script>
-        const formspreeUrl = "${appConfig.formspreeUrl}";
-        const warnings = ${warningsArrayJSON};
-        const steps = ${stepsDataJSON};
-        
-        const yesText = "${appConfig.yesText}";
-        const yesBg = "${appConfig.yesBg}";
-        const yesColor = "${appConfig.yesColor}";
-        const yesFontSize = "${appConfig.yesFontSize}";
-
-        const noText = "${appConfig.noText}";
-        const noBg = "${appConfig.noBg}";
-        const noColor = "${appConfig.noColor}";
-        const noFontSize = "${appConfig.noFontSize}";
-
-        const questionFontSize = "${appConfig.questionFontSize}";
-
-        const cardStyle = "${appConfig.cardStyle}";
-        const paperStyle = "${appConfig.paperStyle}";
-        const envelopeImg = "${appConfig.envelopeImg}";
-
-        const letterTitle = "${appConfig.letterTitle}";
-        const letterP1 = "${appConfig.letterP1}";
-        const letterP2 = "${appConfig.letterP2}";
-        const letterP3 = "${appConfig.letterP3}";
-        const letterSig = "${appConfig.letterSig}";
-
-        function getRandomWarning() {
-            if(!warnings || warnings.length === 0) return "⚠️ No နှိပ်လို့ မရပါဘူးနော်!";
-            return warnings[Math.floor(Math.random() * warnings.length)];
-        }
-
-        function sendToFormspree(userResponse, stepName) {
-            if (!formspreeUrl) return;
-            fetch(formspreeUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                body: JSON.stringify({ Step: stepName, Answer: userResponse, Timestamp: new Date().toLocaleString() })
-            }).catch(error => console.log("Error sending data:", error));
-        }
-
-        let popupTimer;
-        function showPopupWarning(wrapperId) {
-            const wrapper = document.getElementById(wrapperId);
-            if (!wrapper) return;
-            const oldPopup = wrapper.querySelector('.popup-warning');
-            if (oldPopup) oldPopup.remove();
-            const popup = document.createElement('div');
-            popup.className = 'popup-warning';
-            popup.innerText = getRandomWarning();
-            wrapper.appendChild(popup);
-            clearTimeout(popupTimer);
-            popupTimer = setTimeout(() => { popup.remove(); }, 1200);
-        }
-
-        function renderApp() {
-            const container = document.getElementById('app-card-container');
-            container.innerHTML = '';
-
-            steps.forEach((step, idx) => {
-                const stepNum = idx + 1;
-                const nextTarget = (stepNum === steps.length) ? 'falling' : (stepNum + 1);
-
-                const card = document.createElement('div');
-                card.className = \`interactive-card \${cardStyle} step \${stepNum === 1 ? 'active' : ''}\`;
-                card.id = \`step-\${stepNum}\`;
-
-                const yesStyle = \`background: \${yesBg}; color: \${yesColor}; font-size: \${yesFontSize}px;\`;
-                const noStyle = \`background: \${noBg}; color: \${noColor}; font-size: \${noFontSize}px;\`;
-
-                card.innerHTML = \`
-                    <img class="gif-box" src="\${step.gif}" alt="Gif \${stepNum}">
-                    <h2 class="font-bold leading-relaxed" style="font-size: \${questionFontSize}px;">\${step.text}</h2>
-                    <div class="btn-group">
-                        <button class="btn-custom-yes" style="\${yesStyle}" id="btn-yes-\${stepNum}" onclick="nextStep('\${nextTarget}')">\${yesText}</button>
-                        <div class="btn-no-wrapper" id="btn-no-wrapper-\${stepNum}">
-                            <button class="btn-custom-no \${step.behavior === 'orbiting' ? 'orbiting-btn' : ''}" style="\${noStyle}" id="btn-no-\${stepNum}">\${noText}</button>
-                        </div>
-                    </div>
-                \`;
-                container.appendChild(card);
-
-                setTimeout(() => attachBehaviorEventsApp(stepNum, step.behavior, nextTarget), 50);
-            });
-
-            // Falling Bouquet Step
-            const fallingCard = document.createElement('div');
-            fallingCard.className = 'step';
-            fallingCard.id = 'step-falling';
-            fallingCard.style.width = '100%';
-            fallingCard.innerHTML = \`
-                <div class="falling-envelope-container" onclick="openLetter()">
-                    <img class="no-frame-gif" src="\${envelopeImg}" alt="Bouquet/Envelope">
-                    <div class="tap-hint-badge">✨ Tap to Open ✨</div>
-                </div>
-            \`;
-            container.appendChild(fallingCard);
-
-            // Love Letter Step
-            const letterCard = document.createElement('div');
-            letterCard.className = 'step';
-            letterCard.id = 'step-letter';
-            letterCard.style.width = '100%';
-            letterCard.innerHTML = \`
-                <div class="paper-letter-wrapper paper-letter-pop">
-                    <div class="paper-sheet \${paperStyle}">
-                        <div class="paperclip"></div>
-                        <div class="letter-content">
-                            <div class="letter-title">\${letterTitle}</div>
-                            <p>\${letterP1}</p><br>
-                            <p>\${letterP2}</p><br>
-                            <p>\${letterP3}</p>
-                            <div class="letter-signature">\${letterSig}</div>
-                        </div>
-                    </div>
-                </div>
-            \`;
-            container.appendChild(letterCard);
-        }
-
-        let stateNoScalesApp = {};
-        let stateGuiltIndicesApp = {};
-        let stateTeleportCountsApp = {};
-
-        function attachBehaviorEventsApp(stepNum, behavior, nextTarget) {
-            const noBtn = document.getElementById(\`btn-no-\${stepNum}\`);
-            const yesBtn = document.getElementById(\`btn-yes-\${stepNum}\`);
-            const cardEl = document.getElementById(\`step-\${stepNum}\`);
-            if (!noBtn || !cardEl) return;
-
-            if (behavior === 'fleeing') {
-                const triggerFlee = (e) => {
-                    if (e && e.type === 'touchstart') e.preventDefault();
-                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    moveButtonInsideCardFullApp(noBtn, cardEl);
-                };
-                noBtn.addEventListener('mouseenter', triggerFlee);
-                noBtn.addEventListener('touchstart', triggerFlee);
-                noBtn.onclick = triggerFlee;
-            } else if (behavior === 'shrinking') {
-                stateNoScalesApp[stepNum] = { yesScale: 1, noScale: 1 };
-                noBtn.onclick = () => {
-                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    stateNoScalesApp[stepNum].yesScale += 0.35;
-                    stateNoScalesApp[stepNum].noScale -= 0.22;
-                    yesBtn.style.transform = \`scale(\${stateNoScalesApp[stepNum].yesScale})\`;
-                    if (stateNoScalesApp[stepNum].noScale <= 0.1) {
-                        noBtn.style.display = 'none';
-                    } else {
-                        noBtn.style.transform = \`scale(\${stateNoScalesApp[stepNum].noScale})\`;
-                    }
-                };
-            } else if (behavior === 'swap') {
-                const swapFunc = () => {
-                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    const parent = yesBtn.parentNode;
-                    if (parent.children[0] === yesBtn) parent.appendChild(yesBtn);
-                    else parent.insertBefore(yesBtn, parent.children[0]);
-                };
-                noBtn.addEventListener('mouseenter', swapFunc);
-                noBtn.onclick = () => { nextStep(nextTarget); };
-            } else if (behavior === 'teleport') {
-                stateTeleportCountsApp[stepNum] = 0;
-                const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
-                noBtn.onclick = () => {
-                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    stateTeleportCountsApp[stepNum]++;
-                    noBtn.innerText = teleTexts[stateTeleportCountsApp[stepNum] % teleTexts.length];
-                    moveButtonInsideCardFullApp(noBtn, cardEl);
-                };
-            } else if (behavior === 'loading') {
-                noBtn.onclick = () => {
-                    noBtn.disabled = true;
-                    noBtn.innerHTML = \`<i class="fa-solid fa-spinner fa-spin mr-1"></i> Checking...\`;
-                    setTimeout(() => {
-                        showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                        alert("Error 404: 'No' is not available. Server says you must click Yes!");
-                        noBtn.innerHTML = noText;
-                        noBtn.disabled = false;
-                    }, 1200);
-                };
-            } else if (behavior === 'orbiting') {
-                noBtn.onclick = () => { showPopupWarning(\`btn-no-wrapper-\${stepNum}\`); };
-            } else if (behavior === 'guilttrip') {
-                stateGuiltIndicesApp[stepNum] = 0;
-                const guiltTexts = ["Are you sure?", "Really?", "Think of us!", "Click Yes instead!"];
-                const guiltHover = () => {
-                    let idx = stateGuiltIndicesApp[stepNum];
-                    if (idx < guiltTexts.length) {
-                        noBtn.innerText = guiltTexts[idx];
-                        stateGuiltIndicesApp[stepNum]++;
-                    } else {
-                        noBtn.innerText = yesText;
-                        noBtn.style.background = yesBg;
-                        noBtn.style.color = yesColor;
-                        noBtn.onclick = () => nextStep(nextTarget);
-                    }
-                };
-                noBtn.addEventListener('mouseenter', guiltHover);
-                noBtn.onclick = guiltHover;
-            } else if (behavior === 'popuptrap') {
-                noBtn.onclick = () => {
-                    alert("Alert 1: Really?");
-                    alert("Alert 2: Are you strictly sure?");
-                    alert("Alert 3: Okay, fine! Re-directing to YES...");
-                    nextStep(nextTarget);
-                };
-            } else if (behavior === 'gravity') {
-                const gravDrop = () => {
-                    noBtn.classList.add('falling-btn');
-                    setTimeout(() => { noBtn.style.display = 'none'; }, 1200);
-                };
-                noBtn.addEventListener('mouseenter', gravDrop);
-                noBtn.onclick = gravDrop;
-            } else if (behavior === 'split') {
-                const triggerSplit = () => {
-                    const letters = ["Y", "E", "S"];
-                    const rect = noBtn.getBoundingClientRect();
-                    const targetRect = yesBtn.getBoundingClientRect();
-
-                    letters.forEach((char, i) => {
-                        const particle = document.createElement('div');
-                        particle.className = 'split-letter-particle';
-                        particle.innerText = char;
-                        particle.style.left = \`\${rect.left + (i * 20)}px\`;
-                        particle.style.top = \`\${rect.top}px\`;
-                        document.body.appendChild(particle);
-
-                        setTimeout(() => {
-                            particle.style.left = \`\${targetRect.left + 20}px\`;
-                            particle.style.top = \`\${targetRect.top}px\`;
-                            particle.style.transform = 'scale(1.5)';
-                            particle.style.opacity = '0';
-                        }, 50);
-
-                        setTimeout(() => particle.remove(), 700);
-                    });
-
-                    noBtn.style.opacity = '0';
-                    setTimeout(() => noBtn.style.display = 'none', 300);
-                };
-                noBtn.addEventListener('mouseenter', triggerSplit);
-                noBtn.onclick = triggerSplit;
-            }
-        }
-
-        function moveButtonInsideCardFullApp(btnEl, cardEl) {
-            if (!btnEl.classList.contains('escaped-btn')) {
-                btnEl.classList.add('escaped-btn');
-            }
-            const cardRect = cardEl.getBoundingClientRect();
-            const maxX = cardRect.width - btnEl.offsetWidth - 25;
-            const maxY = cardRect.height - btnEl.offsetHeight - 25;
-
-            const randomX = Math.max(15, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(25, Math.floor(Math.random() * maxY));
-
-            btnEl.style.left = \`\${randomX}px\`;
-            btnEl.style.top = \`\${randomY}px\`;
-        }
-
-        function nextStep(stepTarget) {
-            document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
-            let targetEl;
-            if (!isNaN(stepTarget)) {
-                const targetNum = parseInt(stepTarget);
-                targetEl = document.getElementById(\`step-\${targetNum}\`);
-                sendToFormspree("Yes", \`Step \${targetNum - 1}\`);
-            } else if (stepTarget === 'falling') {
-                targetEl = document.getElementById('step-falling');
-                sendToFormspree("Yes", \`Final Question Step\`);
-            } else {
-                targetEl = document.getElementById('step-letter');
-            }
-            if (targetEl) targetEl.classList.add('active');
-        }
-
-        function openLetter() {
-            sendToFormspree("Opened Letter", "Love Letter Step");
-            nextStep('letter');
-        }
-
-        window.onload = renderApp;
-    <\/script>
-</body>
-</html>`;
-        }
-
-        // EXPORT MODAL HANDLERS
-        function exportHTML() {
-            const htmlCode = generateCompleteHTML();
-            document.getElementById('export-code-area').value = htmlCode;
-            document.getElementById('export-modal').classList.remove('hidden');
-        }
-
-        function closeExportModal() {
-            document.getElementById('export-modal').classList.add('hidden');
-        }
-
-        function copyGeneratedCode() {
-            const codeArea = document.getElementById('export-code-area');
-            codeArea.select();
-            document.execCommand('copy');
-            alert('Code များကို Clipboard သို့ ကူးယူပြီးပါပြီ!');
-        }
-
-        // AUTO DOWNLOAD AS index.html
-        function downloadHTMLFile() {
-            const htmlCode = generateCompleteHTML();
-            const blob = new Blob([htmlCode], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'index.html'; // AUTO INDEX.HTML
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // AUTOMATIC GITHUB DEPLOYMENT & LIVE LINK GENERATOR
-        async function autoDeployToGitHub() {
-            const token = getActiveGitHubToken();
-            const repoName = document.getElementById('gh-repo').value.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
-            const statusEl = document.getElementById('deploy-status');
-            const linkContainer = document.getElementById('gh-link-container');
-            const linkInput = document.getElementById('gh-generated-link');
-            const deployBtn = document.getElementById('btn-deploy-gh');
-
-            if (!token) {
-                alert('ကျေးဇူးပြု၍ epostcard သို့မဟုတ် mm သို့မဟုတ် epostcardmm ဟု စာရိုက်ထည့်ပေးပါ');
-                return;
-            }
-            if (!repoName) {
-                alert('Repository Name ထည့်သွင်းပေးပါ။');
-                return;
-            }
-
-            try {
-                deployBtn.disabled = true;
-                deployBtn.classList.add('opacity-50');
-                statusEl.className = "text-xs text-amber-400 font-medium";
-                statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> User account စစ်ဆေးနေသည်...`;
-
-                // 1. Get authenticated user info
-                const userRes = await fetch('https://api.github.com/user', {
-                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-                });
-
-                if (!userRes.ok) throw new Error('GitHub Token မမှန်ကန်ပါ သို့မဟုတ် Auth မအောင်မြင်ပါ။');
-                const userData = await userRes.json();
-                const username = userData.login;
-
-                // 2. Check or Create Repository
-                statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Repository (${repoName}) ဖန်တီးနေသည်...`;
-                
-                let repoRes = await fetch(`https://api.github.com/repos/${username}/${repoName}`, {
-                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-                });
-
-                if (repoRes.status === 404) {
-                    // Create Repo
-                    const createRes = await fetch('https://api.github.com/user/repos', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `token ${token}`,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/vnd.github.v3+json'
-                        },
-                        body: JSON.stringify({
-                            name: repoName,
-                            description: 'Interactive Love Surprise App',
-                            auto_init: true
-                        })
-                    });
-                    if (!createRes.ok) throw new Error('Repository ဖန်တီး၍ မရပါ!');
-                    // Wait for repo init
-                    await new Promise(r => setTimeout(r, 2000));
-                }
-
-                // 3. Upload/Update index.html File
-                statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> index.html ကို Upload တင်နေသည်...`;
-                const htmlContent = generateCompleteHTML();
-                const base64Content = btoa(unescape(encodeURIComponent(htmlContent)));
-
-                // Check existing index.html SHA
-                let sha = null;
-                const fileCheckRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
-                    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
-                });
-                if (fileCheckRes.ok) {
-                    const fileData = await fileCheckRes.json();
-                    sha = fileData.sha;
-                }
-
-                // Put Content
-                const uploadBody = {
-                    message: 'Auto update index.html via Builder',
-                    content: base64Content
-                };
-                if (sha) uploadBody.sha = sha;
-
-                const uploadRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
-                    method: `PUT`,
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify(uploadBody)
-                });
-
-                if (!uploadRes.ok) throw new Text('index.html ဖိုင် Upload တင်ခြင်း မအောင်မြင်ပါ။');
-
-                // 4. Enable GitHub Pages
-                statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> GitHub Pages ကို Activate လုပ်နေသည်...`;
-                await fetch(`https://api.github.com/repos/${username}/${repoName}/pages`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify({
-                        source: { branch: 'main', path: '/' }
-                    })
-                }).catch(() => {}); // Ignore error if already enabled
-
-                // 5. Build Final Live Link
-                const generatedPagesUrl = `https://${username}.github.io/${repoName}/`;
-                linkInput.value = generatedPagesUrl;
-                linkContainer.classList.remove('hidden');
-
-                statusEl.className = "text-xs text-emerald-400 font-bold";
-                statusEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Upload အောင်မြင်ပါပြီ!`;
-
-            } catch (err) {
-                statusEl.className = "text-xs text-rose-400 font-bold";
-                statusEl.innerText = `Error: ${err.message}`;
-            } finally {
-                deployBtn.disabled = false;
-                deployBtn.classList.remove('opacity-50');
-            }
-        }
-
-        function copyGitHubLink() {
-            const linkInput = document.getElementById('gh-generated-link');
-            linkInput.select();
-            document.execCommand('copy');
-            alert('GitHub Pages Live Link ကို ကူးယူပြီးပါပြီ!\n' + linkInput.value);
-        }
-    </script>
-</body>
-</html>
