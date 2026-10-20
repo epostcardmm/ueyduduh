@@ -175,10 +175,10 @@
             100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        .escaped-btn {
-            position: absolute !important;
-            z-index: 9999;
-            transition: top 0.2s ease-out, left 0.2s ease-out;
+        /* Screen အတွင်းမှာသာ နေရာရွှေ့ရန်ပြင်ဆင်ထားသော class */
+        .escaped-btn-card {
+            position: relative !important;
+            transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out;
         }
 
         /* Orbiting Animation */
@@ -857,7 +857,7 @@
                     id: 1,
                     text: "ပြန်ချစ်ပါတော့လား နွေးထွေးပေးချင်ပြီ… 💕",
                     gif: presetGifs[0],
-                    behavior: "guilttrip"
+                    behavior: "fleeing"
                 },
                 {
                     id: 2,
@@ -1139,7 +1139,7 @@
 
                 cardHolder.appendChild(card);
 
-                // Attach Behavior Event Listeners
+                // Attach Behavior Event Listeners (နှိပ်မှ အလုပ်လုပ်စေရန် ပြင်ဆင်ထားသည်)
                 setTimeout(() => attachBehaviorEvents(stepNum, step.behavior, nextTarget), 50);
             });
 
@@ -1180,7 +1180,7 @@
             cardHolder.appendChild(letterCard);
         }
 
-        // ATTACH BEHAVIORS TO PREVIEW NO BUTTONS
+        // ATTACH BEHAVIORS TO PREVIEW NO BUTTONS (Click-triggered & Screen-contained)
         let stateNoScales = {};
         let stateGuiltIndices = {};
         let stateTeleportCounts = {};
@@ -1196,15 +1196,13 @@
             const newNoBtn = noBtn.cloneNode(true);
             noBtn.parentNode.replaceChild(newNoBtn, noBtn);
 
-            // 1. FLEEING
+            // 1. FLEEING (ကတ်ပြားပေါ်တွင်သာ နေရာရွှေ့မည်၊ နှိပ်မှပြေးမည်)
             if (behavior === 'fleeing') {
                 const triggerFlee = (e) => {
-                    if (e && e.type === 'touchstart') e.preventDefault();
+                    if (e) e.preventDefault();
                     showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
-                    moveButtonSafelyWithinCard(newNoBtn, `prev-step-${stepNum}`);
+                    moveButtonInsideCard(newNoBtn);
                 };
-                newNoBtn.addEventListener('mouseenter', triggerFlee);
-                newNoBtn.addEventListener('touchstart', triggerFlee);
                 newNoBtn.onclick = triggerFlee;
             }
 
@@ -1236,11 +1234,10 @@
                         parent.insertBefore(yesBtn, parent.children[0]);
                     }
                 };
-                newNoBtn.addEventListener('mouseenter', swapFunc);
-                newNoBtn.onclick = () => { handleYesClick(nextTarget); };
+                newNoBtn.onclick = swapFunc;
             }
 
-            // 4. TELEPORT / REAPPEARING
+            // 4. TELEPORT / REAPPEARING (ကတ်ပြားပေါ်အတွင်း၌သာ နေရာပြောင်းမည်၊ နှိပ်မှပေါ်မည်)
             else if (behavior === 'teleport') {
                 stateTeleportCounts[stepNum] = 0;
                 const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
@@ -1249,7 +1246,7 @@
                     stateTeleportCounts[stepNum]++;
                     const text = teleTexts[stateTeleportCounts[stepNum] % teleTexts.length];
                     newNoBtn.innerText = text;
-                    moveButtonSafelyWithinCard(newNoBtn, `prev-step-${stepNum}`);
+                    moveButtonInsideCard(newNoBtn);
                 };
             }
 
@@ -1278,7 +1275,8 @@
             else if (behavior === 'guilttrip') {
                 stateGuiltIndices[stepNum] = 0;
                 const guiltTexts = ["Are you sure?", "Really?", "Think of us!", "Click Yes instead!"];
-                const guiltHover = () => {
+                const guiltClick = () => {
+                    showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
                     let idx = stateGuiltIndices[stepNum];
                     if (idx < guiltTexts.length) {
                         newNoBtn.innerText = guiltTexts[idx];
@@ -1290,8 +1288,7 @@
                         newNoBtn.onclick = () => handleYesClick(nextTarget);
                     }
                 };
-                newNoBtn.addEventListener('mouseenter', guiltHover);
-                newNoBtn.onclick = guiltHover;
+                newNoBtn.onclick = guiltClick;
             }
 
             // 8. POP-UP TRAP
@@ -1307,18 +1304,19 @@
             // 9. GRAVITY FALL
             else if (behavior === 'gravity') {
                 const gravDrop = () => {
+                    showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
                     newNoBtn.classList.add('falling-btn');
                     setTimeout(() => {
                         newNoBtn.style.display = 'none';
                     }, 1200);
                 };
-                newNoBtn.addEventListener('mouseenter', gravDrop);
                 newNoBtn.onclick = gravDrop;
             }
 
             // 10. SPLIT / DISSECTING BUTTON
             else if (behavior === 'split') {
                 const triggerSplit = () => {
+                    showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
                     const letters = ["Y", "E", "S"];
                     const rect = newNoBtn.getBoundingClientRect();
                     const targetRect = yesBtn.getBoundingClientRect();
@@ -1344,35 +1342,18 @@
                     newNoBtn.style.opacity = '0';
                     setTimeout(() => newNoBtn.style.display = 'none', 300);
                 };
-                newNoBtn.addEventListener('mouseenter', triggerSplit);
                 newNoBtn.onclick = triggerSplit;
             }
         }
 
-        // SCREEN အတွင်းမှာသာ လှပစွာရွေ့လျားစေသော Safe Function (Card ထဲမှာသာ ရွေ့အောင် ပြင်ဆင်ထားသည်)
-        function moveButtonSafelyWithinCard(btnEl, cardId) {
-            const cardEl = document.getElementById(cardId);
-            if (!cardEl) return;
-
-            if (!btnEl.classList.contains('escaped-btn')) {
-                btnEl.classList.add('escaped-btn');
+        // ကတ်ပြား မြင်ကွင်း (Screen / Card Container) အတွင်းမှာသာ ခလုတ်ရွှေ့ရန် ဖန်တီးထားသော လုပ်ဆောင်ချက်
+        function moveButtonInsideCard(btnEl) {
+            if (!btnEl.classList.contains('escaped-btn-card')) {
+                btnEl.classList.add('escaped-btn-card');
             }
-
-            const cardRect = cardEl.getBoundingClientRect();
-            const btnWidth = btnEl.offsetWidth || 80;
-            const btnHeight = btnEl.offsetHeight || 40;
-
-            // Card ရဲ့ အတွင်းဘက် margins တွေနဲ့သာ Random တွက်ချက်ခြင်း (Screen ပြင်ပလုံးဝမထွက်စေရန်)
-            const minX = 20;
-            const maxX = Math.max(minX, cardRect.width - btnWidth - 20);
-            const minY = 160; // GIF နဲ့ မေးခွန်းစာသားအောက်နားမှာသာ ရွေ့ရန်
-            const maxY = Math.max(minY, cardRect.height - btnHeight - 20);
-
-            const randomX = Math.floor(Math.random() * (maxX - minX)) + minX;
-            const randomY = Math.floor(Math.random() * (maxY - minY)) + minY;
-
-            btnEl.style.left = `${randomX}px`;
-            btnEl.style.top = `${randomY}px`;
+            const randomX = (Math.random() - 0.5) * 120;
+            const randomY = (Math.random() - 0.5) * 60;
+            btnEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
         }
 
         function setEnvelopeImg(url, element) {
@@ -1480,7 +1461,7 @@
             previewStep('letter');
         }
 
-        // GENERATE STANDALONE HTML CODE FOR EXPORT (Export လုပ်မည့် HTML ထဲတွင်ပါ Safe ဖြစ်အောင် ပြင်ဆင်ထားသည်)
+        // GENERATE STANDALONE HTML CODE FOR EXPORT (Export လုပ်မည့် ကုဒ်တွင်လည်း Screen အတွင်းသာ ရွှေ့ရန်နှင့် နှိပ်မှ အလုပ်လုပ်ရန် Update လုပ်ပြီးသားဖြစ်သည်)
         function generateCompleteHTML() {
             const warningsArrayJSON = JSON.stringify(appConfig.warnings);
             const stepsDataJSON = JSON.stringify(appConfig.steps);
@@ -1552,7 +1533,7 @@
         .popup-warning::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #f43f5e transparent transparent transparent; }
         @keyframes popupBounce { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
         
-        .escaped-btn { position: absolute !important; z-index: 9999; transition: top 0.2s ease-out, left 0.2s ease-out; }
+        .escaped-btn-card { position: relative !important; transition: transform 0.2s ease-in-out; }
 
         @keyframes orbitAnimation { 0% { transform: rotate(0deg) translateX(70px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(70px) rotate(-360deg); } }
         .orbiting-btn { animation: orbitAnimation 2.2s linear infinite; }
@@ -1741,12 +1722,10 @@
 
             if (behavior === 'fleeing') {
                 const triggerFlee = (e) => {
-                    if (e && e.type === 'touchstart') e.preventDefault();
+                    if (e) e.preventDefault();
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    moveButtonSafelyWithinCardApp(noBtn, \`step-\${stepNum}\`);
+                    moveButtonInsideCardApp(noBtn);
                 };
-                noBtn.addEventListener('mouseenter', triggerFlee);
-                noBtn.addEventListener('touchstart', triggerFlee);
                 noBtn.onclick = triggerFlee;
             } else if (behavior === 'shrinking') {
                 stateNoScalesApp[stepNum] = { yesScale: 1, noScale: 1 };
@@ -1768,8 +1747,7 @@
                     if (parent.children[0] === yesBtn) parent.appendChild(yesBtn);
                     else parent.insertBefore(yesBtn, parent.children[0]);
                 };
-                noBtn.addEventListener('mouseenter', swapFunc);
-                noBtn.onclick = () => { nextStep(nextTarget); };
+                noBtn.onclick = swapFunc;
             } else if (behavior === 'teleport') {
                 stateTeleportCountsApp[stepNum] = 0;
                 const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
@@ -1777,7 +1755,7 @@
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     stateTeleportCountsApp[stepNum]++;
                     noBtn.innerText = teleTexts[stateTeleportCountsApp[stepNum] % teleTexts.length];
-                    moveButtonSafelyWithinCardApp(noBtn, \`step-\${stepNum}\`);
+                    moveButtonInsideCardApp(noBtn);
                 };
             } else if (behavior === 'loading') {
                 noBtn.onclick = () => {
@@ -1795,7 +1773,8 @@
             } else if (behavior === 'guilttrip') {
                 stateGuiltIndicesApp[stepNum] = 0;
                 const guiltTexts = ["Are you sure?", "Really?", "Think of us!", "Click Yes instead!"];
-                const guiltHover = () => {
+                const guiltClick = () => {
+                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     let idx = stateGuiltIndicesApp[stepNum];
                     if (idx < guiltTexts.length) {
                         noBtn.innerText = guiltTexts[idx];
@@ -1807,8 +1786,7 @@
                         noBtn.onclick = () => nextStep(nextTarget);
                     }
                 };
-                noBtn.addEventListener('mouseenter', guiltHover);
-                noBtn.onclick = guiltHover;
+                noBtn.onclick = guiltClick;
             } else if (behavior === 'popuptrap') {
                 noBtn.onclick = () => {
                     alert("Alert 1: Really?");
@@ -1818,13 +1796,14 @@
                 };
             } else if (behavior === 'gravity') {
                 const gravDrop = () => {
+                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     noBtn.classList.add('falling-btn');
                     setTimeout(() => { noBtn.style.display = 'none'; }, 1200);
                 };
-                noBtn.addEventListener('mouseenter', gravDrop);
                 noBtn.onclick = gravDrop;
             } else if (behavior === 'split') {
                 const triggerSplit = () => {
+                    showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     const letters = ["Y", "E", "S"];
                     const rect = noBtn.getBoundingClientRect();
                     const targetRect = yesBtn.getBoundingClientRect();
@@ -1850,33 +1829,17 @@
                     noBtn.style.opacity = '0';
                     setTimeout(() => noBtn.style.display = 'none', 300);
                 };
-                noBtn.addEventListener('mouseenter', triggerSplit);
                 noBtn.onclick = triggerSplit;
             }
         }
 
-        function moveButtonSafelyWithinCardApp(btnEl, cardId) {
-            const cardEl = document.getElementById(cardId);
-            if (!cardEl) return;
-
-            if (!btnEl.classList.contains('escaped-btn')) {
-                btnEl.classList.add('escaped-btn');
+        function moveButtonInsideCardApp(btnEl) {
+            if (!btnEl.classList.contains('escaped-btn-card')) {
+                btnEl.classList.add('escaped-btn-card');
             }
-
-            const cardRect = cardEl.getBoundingClientRect();
-            const btnWidth = btnEl.offsetWidth || 80;
-            const btnHeight = btnEl.offsetHeight || 40;
-
-            const minX = 20;
-            const maxX = Math.max(minX, cardRect.width - btnWidth - 20);
-            const minY = 160;
-            const maxY = Math.max(minY, cardRect.height - btnHeight - 20);
-
-            const randomX = Math.floor(Math.random() * (maxX - minX)) + minX;
-            const randomY = Math.floor(Math.random() * (maxY - minY)) + minY;
-
-            btnEl.style.left = \`\${randomX}px\`;
-            btnEl.style.top = \`\${randomY}px\`;
+            const randomX = (Math.random() - 0.5) * 120;
+            const randomY = (Math.random() - 0.5) * 60;
+            btnEl.style.transform = \`translate(\${randomX}px, \${randomY}px)\`;
         }
 
         function nextStep(stepTarget) {
