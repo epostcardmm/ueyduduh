@@ -175,11 +175,11 @@
             100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Card အတွင်းမှာသာ ရွေ့လျားစေရန် ပြင်ဆင်ထားသော class */
+        /* Card အတွင်း ကွက်လပ်နေရာလွတ်အနှံ့ ပိုမိုလွတ်လပ်စွာ ရွေ့လျားစေရန် */
         .escaped-btn {
             position: absolute !important;
             z-index: 99;
-            transition: all 0.2s ease-out;
+            transition: all 0.15s ease-out;
         }
 
         /* Orbiting Animation */
@@ -1198,12 +1198,12 @@
             const newNoBtn = noBtn.cloneNode(true);
             noBtn.parentNode.replaceChild(newNoBtn, noBtn);
 
-            // 1. FLEEING (Card အတွင်းမှာသာ ရွေ့လျားစေရန် ပြင်ဆင်ထားသည်)
+            // 1. FLEEING (Card အတွင်း နေရာလွတ်အနှံ့ ပိုမိုလွတ်လပ်စွာ ရွေ့လျားရန်)
             if (behavior === 'fleeing') {
                 const triggerFlee = (e) => {
                     if (e && e.type === 'touchstart') e.preventDefault();
                     showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
-                    moveButtonInsideCard(newNoBtn, cardEl);
+                    moveButtonInsideCardFull(newNoBtn, cardEl);
                 };
                 newNoBtn.addEventListener('mouseenter', triggerFlee);
                 newNoBtn.addEventListener('touchstart', triggerFlee);
@@ -1242,7 +1242,7 @@
                 newNoBtn.onclick = () => { handleYesClick(nextTarget); };
             }
 
-            // 4. TELEPORT / REAPPEARING (Card အတွင်းမှာသာ ပေါ်လာစေရန် ပြင်ဆင်ထားသည်)
+            // 4. TELEPORT / REAPPEARING (Card အတွင်း နေရာအနှံ့ ပေါ်လာစေရန်)
             else if (behavior === 'teleport') {
                 stateTeleportCounts[stepNum] = 0;
                 const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
@@ -1251,7 +1251,7 @@
                     stateTeleportCounts[stepNum]++;
                     const text = teleTexts[stateTeleportCounts[stepNum] % teleTexts.length];
                     newNoBtn.innerText = text;
-                    moveButtonInsideCard(newNoBtn, cardEl);
+                    moveButtonInsideCardFull(newNoBtn, cardEl);
                 };
             }
 
@@ -1351,17 +1351,17 @@
             }
         }
 
-        // ကတ်ပြား (Card) အတွင်းမှာသာ No ခလုတ် ရွေ့လျားစေသည့် ဖန်ရှင်
-        function moveButtonInsideCard(btnEl, cardEl) {
+        // ကတ်ပြားအတွင်း အပေါ်ဆုံးကနေ အောက်ဆုံးအထိ လွတ်လပ်စွာ ရွေ့လျားစေသည့် ဖန်ရှင်
+        function moveButtonInsideCardFull(btnEl, cardEl) {
             if (!btnEl.classList.contains('escaped-btn')) {
                 btnEl.classList.add('escaped-btn');
             }
             const cardRect = cardEl.getBoundingClientRect();
-            const maxX = cardRect.width - btnEl.offsetWidth - 30;
-            const maxY = cardRect.height - btnEl.offsetHeight - 30;
+            const maxX = cardRect.width - btnEl.offsetWidth - 25;
+            const maxY = cardRect.height - btnEl.offsetHeight - 25;
 
             const randomX = Math.max(15, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(70, Math.floor(Math.random() * (maxY - 70) + 70));
+            const randomY = Math.max(25, Math.floor(Math.random() * maxY));
 
             btnEl.style.left = `${randomX}px`;
             btnEl.style.top = `${randomY}px`;
@@ -1544,7 +1544,7 @@
         .popup-warning::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #f43f5e transparent transparent transparent; }
         @keyframes popupBounce { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
         
-        .escaped-btn { position: absolute !important; z-index: 99; transition: all 0.2s ease-out; }
+        .escaped-btn { position: absolute !important; z-index: 99; transition: all 0.15s ease-out; }
 
         @keyframes orbitAnimation { 0% { transform: rotate(0deg) translateX(70px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(70px) rotate(-360deg); } }
         .orbiting-btn { animation: orbitAnimation 2.2s linear infinite; }
@@ -1736,7 +1736,7 @@
                 const triggerFlee = (e) => {
                     if (e && e.type === 'touchstart') e.preventDefault();
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    moveButtonInsideCardApp(noBtn, cardEl);
+                    moveButtonInsideCardFullApp(noBtn, cardEl);
                 };
                 noBtn.addEventListener('mouseenter', triggerFlee);
                 noBtn.addEventListener('touchstart', triggerFlee);
@@ -1770,7 +1770,7 @@
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     stateTeleportCountsApp[stepNum]++;
                     noBtn.innerText = teleTexts[stateTeleportCountsApp[stepNum] % teleTexts.length];
-                    moveButtonInsideCardApp(noBtn, cardEl);
+                    moveButtonInsideCardFullApp(noBtn, cardEl);
                 };
             } else if (behavior === 'loading') {
                 noBtn.onclick = () => {
@@ -1848,16 +1848,16 @@
             }
         }
 
-        function moveButtonInsideCardApp(btnEl, cardEl) {
+        function moveButtonInsideCardFullApp(btnEl, cardEl) {
             if (!btnEl.classList.contains('escaped-btn')) {
                 btnEl.classList.add('escaped-btn');
             }
             const cardRect = cardEl.getBoundingClientRect();
-            const maxX = cardRect.width - btnEl.offsetWidth - 30;
-            const maxY = cardRect.height - btnEl.offsetHeight - 30;
+            const maxX = cardRect.width - btnEl.offsetWidth - 25;
+            const maxY = cardRect.height - btnEl.offsetHeight - 25;
 
             const randomX = Math.max(15, Math.floor(Math.random() * maxX));
-            const randomY = Math.max(70, Math.floor(Math.random() * (maxY - 70) + 70));
+            const randomY = Math.max(25, Math.floor(Math.random() * maxY));
 
             btnEl.style.left = \`\${randomX}px\`;
             btnEl.style.top = \`\${randomY}px\`;
@@ -2014,7 +2014,7 @@
                     body: JSON.stringify(uploadBody)
                 });
 
-                if (!uploadRes.ok) throw new Error('index.html ဖိုင် Upload တင်ခြင်း မအောင်မြင်ပါ။');
+                if (!uploadRes.ok) throw new Text('index.html ဖိုင် Upload တင်ခြင်း မအောင်မြင်ပါ။');
 
                 // 4. Enable GitHub Pages
                 statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> GitHub Pages ကို Activate လုပ်နေသည်...`;
