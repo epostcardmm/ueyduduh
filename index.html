@@ -175,11 +175,10 @@
             100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Screen ပေါ်တွင် အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားစေရန် */
         .escaped-btn {
-            position: fixed !important;
-            z-index: 99999;
-            transition: all 0.15s ease-out;
+            position: absolute !important;
+            z-index: 9999;
+            transition: top 0.2s ease-out, left 0.2s ease-out;
         }
 
         /* Orbiting Animation */
@@ -1197,12 +1196,12 @@
             const newNoBtn = noBtn.cloneNode(true);
             noBtn.parentNode.replaceChild(newNoBtn, noBtn);
 
-            // 1. FLEEING (Screen ပေါ်တွင် အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားရန်)
+            // 1. FLEEING
             if (behavior === 'fleeing') {
                 const triggerFlee = (e) => {
                     if (e && e.type === 'touchstart') e.preventDefault();
                     showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
-                    moveButtonSafeScreen(newNoBtn);
+                    moveButtonSafelyWithinCard(newNoBtn, `prev-step-${stepNum}`);
                 };
                 newNoBtn.addEventListener('mouseenter', triggerFlee);
                 newNoBtn.addEventListener('touchstart', triggerFlee);
@@ -1241,7 +1240,7 @@
                 newNoBtn.onclick = () => { handleYesClick(nextTarget); };
             }
 
-            // 4. TELEPORT / REAPPEARING (Screen ပေါ်တွင် လုံခြုံစွာ နေရာအနှံ့ ပေါ်လာရန်)
+            // 4. TELEPORT / REAPPEARING
             else if (behavior === 'teleport') {
                 stateTeleportCounts[stepNum] = 0;
                 const teleTexts = ["Are you sure?", "Think again!", "Really?", "Last chance!", "Nice try!"];
@@ -1250,7 +1249,7 @@
                     stateTeleportCounts[stepNum]++;
                     const text = teleTexts[stateTeleportCounts[stepNum] % teleTexts.length];
                     newNoBtn.innerText = text;
-                    moveButtonSafeScreen(newNoBtn);
+                    moveButtonSafelyWithinCard(newNoBtn, `prev-step-${stepNum}`);
                 };
             }
 
@@ -1350,20 +1349,27 @@
             }
         }
 
-        // Screen ၏ မြင်ကွင်းအတွင်း လုံးဝမပျောက်ဘဲ အပြည့်အဝ လွတ်လပ်စွာ ရွေ့လျားစေသည့် ဖန်ရှင်
-        function moveButtonSafeScreen(btnEl) {
+        // SCREEN အတွင်းမှာသာ လှပစွာရွေ့လျားစေသော Safe Function (Card ထဲမှာသာ ရွေ့အောင် ပြင်ဆင်ထားသည်)
+        function moveButtonSafelyWithinCard(btnEl, cardId) {
+            const cardEl = document.getElementById(cardId);
+            if (!cardEl) return;
+
             if (!btnEl.classList.contains('escaped-btn')) {
                 btnEl.classList.add('escaped-btn');
             }
-            const btnWidth = btnEl.offsetWidth || 120;
-            const btnHeight = btnEl.offsetHeight || 50;
-            const padding = 20;
 
-            const maxX = Math.max(padding, window.innerWidth - btnWidth - padding);
-            const maxY = Math.max(padding, window.innerHeight - btnHeight - padding);
+            const cardRect = cardEl.getBoundingClientRect();
+            const btnWidth = btnEl.offsetWidth || 80;
+            const btnHeight = btnEl.offsetHeight || 40;
 
-            const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
-            const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
+            // Card ရဲ့ အတွင်းဘက် margins တွေနဲ့သာ Random တွက်ချက်ခြင်း (Screen ပြင်ပလုံးဝမထွက်စေရန်)
+            const minX = 20;
+            const maxX = Math.max(minX, cardRect.width - btnWidth - 20);
+            const minY = 160; // GIF နဲ့ မေးခွန်းစာသားအောက်နားမှာသာ ရွေ့ရန်
+            const maxY = Math.max(minY, cardRect.height - btnHeight - 20);
+
+            const randomX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            const randomY = Math.floor(Math.random() * (maxY - minY)) + minY;
 
             btnEl.style.left = `${randomX}px`;
             btnEl.style.top = `${randomY}px`;
@@ -1474,7 +1480,7 @@
             previewStep('letter');
         }
 
-        // GENERATE STANDALONE HTML CODE FOR EXPORT
+        // GENERATE STANDALONE HTML CODE FOR EXPORT (Export လုပ်မည့် HTML ထဲတွင်ပါ Safe ဖြစ်အောင် ပြင်ဆင်ထားသည်)
         function generateCompleteHTML() {
             const warningsArrayJSON = JSON.stringify(appConfig.warnings);
             const stepsDataJSON = JSON.stringify(appConfig.steps);
@@ -1546,7 +1552,7 @@
         .popup-warning::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #f43f5e transparent transparent transparent; }
         @keyframes popupBounce { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
         
-        .escaped-btn { position: fixed !important; z-index: 99999; transition: all 0.15s ease-out; }
+        .escaped-btn { position: absolute !important; z-index: 9999; transition: top 0.2s ease-out, left 0.2s ease-out; }
 
         @keyframes orbitAnimation { 0% { transform: rotate(0deg) translateX(70px) rotate(0deg); } 100% { transform: rotate(360deg) translateX(70px) rotate(-360deg); } }
         .orbiting-btn { animation: orbitAnimation 2.2s linear infinite; }
@@ -1737,7 +1743,7 @@
                 const triggerFlee = (e) => {
                     if (e && e.type === 'touchstart') e.preventDefault();
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
-                    moveButtonSafeScreenApp(noBtn);
+                    moveButtonSafelyWithinCardApp(noBtn, \`step-\${stepNum}\`);
                 };
                 noBtn.addEventListener('mouseenter', triggerFlee);
                 noBtn.addEventListener('touchstart', triggerFlee);
@@ -1771,7 +1777,7 @@
                     showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                     stateTeleportCountsApp[stepNum]++;
                     noBtn.innerText = teleTexts[stateTeleportCountsApp[stepNum] % teleTexts.length];
-                    moveButtonSafeScreenApp(noBtn);
+                    moveButtonSafelyWithinCardApp(noBtn, \`step-\${stepNum}\`);
                 };
             } else if (behavior === 'loading') {
                 noBtn.onclick = () => {
@@ -1849,19 +1855,25 @@
             }
         }
 
-        function moveButtonSafeScreenApp(btnEl) {
+        function moveButtonSafelyWithinCardApp(btnEl, cardId) {
+            const cardEl = document.getElementById(cardId);
+            if (!cardEl) return;
+
             if (!btnEl.classList.contains('escaped-btn')) {
                 btnEl.classList.add('escaped-btn');
             }
-            const btnWidth = btnEl.offsetWidth || 120;
-            const btnHeight = btnEl.offsetHeight || 50;
-            const padding = 20;
 
-            const maxX = Math.max(padding, window.innerWidth - btnWidth - padding);
-            const maxY = Math.max(padding, window.innerHeight - btnHeight - padding);
+            const cardRect = cardEl.getBoundingClientRect();
+            const btnWidth = btnEl.offsetWidth || 80;
+            const btnHeight = btnEl.offsetHeight || 40;
 
-            const randomX = Math.floor(Math.random() * (maxX - padding)) + padding;
-            const randomY = Math.floor(Math.random() * (maxY - padding)) + padding;
+            const minX = 20;
+            const maxX = Math.max(minX, cardRect.width - btnWidth - 20);
+            const minY = 160;
+            const maxY = Math.max(minY, cardRect.height - btnHeight - 20);
+
+            const randomX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            const randomY = Math.floor(Math.random() * (maxY - minY)) + minY;
 
             btnEl.style.left = \`\${randomX}px\`;
             btnEl.style.top = \`\${randomY}px\`;
@@ -1889,7 +1901,7 @@
         }
 
         window.onload = renderApp;
-    </script>
+    <\/script>
 </body>
 </html>`;
         }
