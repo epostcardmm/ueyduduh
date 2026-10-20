@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Love Surprise - App & Builder</title>
+    <title>Interactive Love Surprise - App & Builder Pro</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -175,7 +175,7 @@
             100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Screen အတွင်းမှာသာ နေရာရွှေ့ရန်ပြင်ဆင်ထားသော class */
+        /* Screen အတွင်းမှာသာ ရွှေ့ရန်ပြင်ဆင်ထားသော class */
         .escaped-btn-card {
             position: relative !important;
             transition: transform 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out;
@@ -405,7 +405,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg text-white leading-tight">Love Surprise Builder Pro</h1>
-                    <p class="text-xs text-pink-400">Step များ၊ ခလုတ် Behavior 10 မျိုးနှင့် Design များ စိတ်ကြိုက်ပြင်ပါ</p>
+                    <p class="text-xs text-pink-400">Step တစ်ခုချင်းစီအလိုက် Yes/No စာသားများနှင့် Design များ စိတ်ကြိုက်ပြင်ပါ</p>
                 </div>
             </div>
             
@@ -487,10 +487,10 @@
         <!-- TAB CONTENT 2: BUTTON STYLES & FONTS CUSTOMIZATION -->
         <div id="tab-buttons" class="space-y-4 hidden">
             
-            <!-- YES Button Customization -->
+            <!-- Global YES Button Customization -->
             <div class="bg-slate-800/40 p-4 rounded-2xl border border-slate-700/60 space-y-3">
                 <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
-                    <i class="fa-solid fa-thumbs-up"></i> "YES" ခလုတ် ဒီဇိုင်း
+                    <i class="fa-solid fa-thumbs-up"></i> Default "YES" ခလုတ် ဒီဇိုင်း
                 </h3>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -514,10 +514,10 @@
                 </div>
             </div>
 
-            <!-- NO Button Customization -->
+            <!-- Global NO Button Customization -->
             <div class="bg-slate-800/40 p-4 rounded-2xl border border-slate-700/60 space-y-3">
                 <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2">
-                    <i class="fa-solid fa-thumbs-down"></i> "NO" ခလုတ် ဒီဇိုင်း
+                    <i class="fa-solid fa-thumbs-down"></i> Default "NO" ခလုတ် ဒီဇိုင်း
                 </h3>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -850,30 +850,36 @@
             { id: "split", name: "10. Dissecting / Split Button (အစိတ်စိတ်အမွှာမွှာ ကွဲသွားခြင်း)" }
         ];
 
-        // CONFIG APP STATE
+        // CONFIG APP STATE (Step တစ်ခုချင်းစီတွင် yesText နှင့် noText ထည့်သွင်းနိုင်ရန် ပြင်ဆင်ထားသည်)
         const appConfig = {
             steps: [
                 {
                     id: 1,
                     text: "ပြန်ချစ်ပါတော့လား နွေးထွေးပေးချင်ပြီ… 💕",
                     gif: presetGifs[0],
-                    behavior: "fleeing"
+                    behavior: "fleeing",
+                    yesText: "",
+                    noText: ""
                 },
                 {
                     id: 2,
                     text: "တကယ် အမြဲတမ်း ချစ်ပေးမှာလား… 🥺",
                     gif: presetGifs[1],
-                    behavior: "fleeing"
+                    behavior: "fleeing",
+                    yesText: "",
+                    noText: ""
                 },
                 {
                     id: 3,
                     text: "တကယ်ကြီး အဖြေပြန်ပေးလိုက်တာလား? 💖",
                     gif: presetGifs[2],
-                    behavior: "shrinking"
+                    behavior: "shrinking",
+                    yesText: "",
+                    noText: ""
                 }
             ],
             
-            // Button Styles
+            // Global Default Button Styles
             yesText: "Yes",
             yesFontSize: "18",
             yesBg: "#ff416c",
@@ -966,7 +972,7 @@
                     <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
                         <h3 class="text-sm font-bold text-pink-400 flex items-center gap-2">
                             <span class="w-5 h-5 rounded-full bg-pink-500/20 text-pink-400 text-xs flex items-center justify-center">${stepNum}</span>
-                            Step ${stepNum} မေးခွန်း Config
+                            Step ${stepNum} မေးခွန်း & ခလုတ် Config
                         </h3>
                         ${appConfig.steps.length > 2 ? `
                             <button onclick="removeStep(${index})" class="text-xs text-rose-400 hover:text-rose-300 font-bold px-2 py-1 bg-rose-950/50 rounded-lg">
@@ -978,6 +984,17 @@
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">စာသား (Question Text)</label>
                         <input type="text" value="${step.text}" oninput="updateStepDataInline(${index}, 'text', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-emerald-400 mb-1">ဤ Step အတွက် Yes စာသား</label>
+                            <input type="text" value="${step.yesText !== undefined ? step.yesText : ''}" placeholder="Default (Yes)" oninput="updateStepDataInline(${index}, 'yesText', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-rose-400 mb-1">ဤ Step အတွက် No စာသား</label>
+                            <input type="text" value="${step.noText !== undefined ? step.noText : ''}" placeholder="Default (No)" oninput="updateStepDataInline(${index}, 'noText', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-rose-500">
+                        </div>
                     </div>
 
                     <div>
@@ -1038,7 +1055,9 @@
                 id: nextIndex,
                 text: `မေးခွန်းအသစ် ${nextIndex}… 💕`,
                 gif: presetGifs[nextIndex % presetGifs.length],
-                behavior: "fleeing"
+                behavior: "fleeing",
+                yesText: "",
+                noText: ""
             });
             renderStepsEditor();
             previewStep(nextIndex);
@@ -1124,15 +1143,18 @@
                 const yesStyle = `background: ${appConfig.yesBg}; color: ${appConfig.yesColor}; font-size: ${appConfig.yesFontSize}px;`;
                 const noStyle = `background: ${appConfig.noBg}; color: ${appConfig.noColor}; font-size: ${appConfig.noFontSize}px;`;
 
+                const activeYesLabel = (step.yesText && step.yesText.trim() !== '') ? step.yesText : appConfig.yesText;
+                const activeNoLabel = (step.noText && step.noText.trim() !== '') ? step.noText : appConfig.noText;
+
                 card.innerHTML = `
                     <img class="gif-box" src="${step.gif}" alt="Gif ${stepNum}">
                     <h2 class="font-bold leading-relaxed" style="font-size: ${appConfig.questionFontSize}px;">
                         ${step.text}
                     </h2>
                     <div class="flex items-center justify-center gap-4 w-full min-h-[90px] pt-2 relative btn-container-step">
-                        <button class="btn-custom-yes" style="${yesStyle}" id="btn-yes-prev-${stepNum}" onclick="handleYesClick('${nextTarget}')">${appConfig.yesText}</button>
+                        <button class="btn-custom-yes" style="${yesStyle}" id="btn-yes-prev-${stepNum}" onclick="handleYesClick('${nextTarget}')">${activeYesLabel}</button>
                         <div class="btn-no-wrapper-preview" id="btn-no-wrapper-prev-${stepNum}">
-                            <button class="btn-custom-no ${step.behavior === 'orbiting' ? 'orbiting-btn' : ''}" style="${noStyle}" id="btn-no-prev-${stepNum}">${appConfig.noText}</button>
+                            <button class="btn-custom-no ${step.behavior === 'orbiting' ? 'orbiting-btn' : ''}" style="${noStyle}" id="btn-no-prev-${stepNum}">${activeNoLabel}</button>
                         </div>
                     </div>
                 `;
@@ -1140,7 +1162,7 @@
                 cardHolder.appendChild(card);
 
                 // Attach Behavior Event Listeners (နှိပ်မှ အလုပ်လုပ်စေရန် ပြင်ဆင်ထားသည်)
-                setTimeout(() => attachBehaviorEvents(stepNum, step.behavior, nextTarget), 50);
+                setTimeout(() => attachBehaviorEvents(stepNum, step.behavior, nextTarget, activeYesLabel), 50);
             });
 
             // STEP 3.5: FALLING BOUQUET CARD
@@ -1185,7 +1207,7 @@
         let stateGuiltIndices = {};
         let stateTeleportCounts = {};
 
-        function attachBehaviorEvents(stepNum, behavior, nextTarget) {
+        function attachBehaviorEvents(stepNum, behavior, nextTarget, activeYesLabel) {
             const noBtn = document.getElementById(`btn-no-prev-${stepNum}`);
             const noWrapper = document.getElementById(`btn-no-wrapper-prev-${stepNum}`);
             const yesBtn = document.getElementById(`btn-yes-prev-${stepNum}`);
@@ -1252,13 +1274,15 @@
 
             // 5. FAKE LOADING / DISABLED
             else if (behavior === 'loading') {
+                const stepObj = appConfig.steps[stepNum - 1];
+                const defaultNoVal = (stepObj && stepObj.noText && stepObj.noText.trim() !== '') ? stepObj.noText : appConfig.noText;
                 newNoBtn.onclick = () => {
                     newNoBtn.disabled = true;
                     newNoBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Checking...`;
                     setTimeout(() => {
                         showPopupWarningPrev(`btn-no-wrapper-prev-${stepNum}`);
                         alert("Error 404: 'No' is not available. Server says you must click Yes!");
-                        newNoBtn.innerHTML = appConfig.noText;
+                        newNoBtn.innerHTML = defaultNoVal;
                         newNoBtn.disabled = false;
                     }, 1200);
                 };
@@ -1282,7 +1306,7 @@
                         newNoBtn.innerText = guiltTexts[idx];
                         stateGuiltIndices[stepNum]++;
                     } else {
-                        newNoBtn.innerText = appConfig.yesText;
+                        newNoBtn.innerText = activeYesLabel;
                         newNoBtn.style.background = appConfig.yesBg;
                         newNoBtn.style.color = appConfig.yesColor;
                         newNoBtn.onclick = () => handleYesClick(nextTarget);
@@ -1461,7 +1485,7 @@
             previewStep('letter');
         }
 
-        // GENERATE STANDALONE HTML CODE FOR EXPORT (Export လုပ်မည့် ကုဒ်တွင်လည်း Screen အတွင်းသာ ရွှေ့ရန်နှင့် နှိပ်မှ အလုပ်လုပ်ရန် Update လုပ်ပြီးသားဖြစ်သည်)
+        // GENERATE STANDALONE HTML CODE FOR EXPORT
         function generateCompleteHTML() {
             const warningsArrayJSON = JSON.stringify(appConfig.warnings);
             const stepsDataJSON = JSON.stringify(appConfig.steps);
@@ -1596,12 +1620,12 @@
         const warnings = ${warningsArrayJSON};
         const steps = ${stepsDataJSON};
         
-        const yesText = "${appConfig.yesText}";
+        const defaultYesText = "${appConfig.yesText}";
         const yesBg = "${appConfig.yesBg}";
         const yesColor = "${appConfig.yesColor}";
         const yesFontSize = "${appConfig.yesFontSize}";
 
-        const noText = "${appConfig.noText}";
+        const defaultNoText = "${appConfig.noText}";
         const noBg = "${appConfig.noBg}";
         const noColor = "${appConfig.noColor}";
         const noFontSize = "${appConfig.noFontSize}";
@@ -1661,19 +1685,22 @@
                 const yesStyle = \`background: \${yesBg}; color: \${yesColor}; font-size: \${yesFontSize}px;\`;
                 const noStyle = \`background: \${noBg}; color: \${noColor}; font-size: \${noFontSize}px;\`;
 
+                const stepYesLabel = (step.yesText && step.yesText.trim() !== '') ? step.yesText : defaultYesText;
+                const stepNoLabel = (step.noText && step.noText.trim() !== '') ? step.noText : defaultNoText;
+
                 card.innerHTML = \`
                     <img class="gif-box" src="\${step.gif}" alt="Gif \${stepNum}">
                     <h2 class="font-bold leading-relaxed" style="font-size: \${questionFontSize}px;">\${step.text}</h2>
                     <div class="btn-group">
-                        <button class="btn-custom-yes" style="\${yesStyle}" id="btn-yes-\${stepNum}" onclick="nextStep('\${nextTarget}')">\${yesText}</button>
+                        <button class="btn-custom-yes" style="\${yesStyle}" id="btn-yes-\${stepNum}" onclick="nextStep('\${nextTarget}')">\${stepYesLabel}</button>
                         <div class="btn-no-wrapper" id="btn-no-wrapper-\${stepNum}">
-                            <button class="btn-custom-no \${step.behavior === 'orbiting' ? 'orbiting-btn' : ''}" style="\${noStyle}" id="btn-no-\${stepNum}">\${noText}</button>
+                            <button class="btn-custom-no \${step.behavior === 'orbiting' ? 'orbiting-btn' : ''}" style="\${noStyle}" id="btn-no-\${stepNum}">\${stepNoLabel}</button>
                         </div>
                     </div>
                 \`;
                 container.appendChild(card);
 
-                setTimeout(() => attachBehaviorEventsApp(stepNum, step.behavior, nextTarget), 50);
+                setTimeout(() => attachBehaviorEventsApp(stepNum, step.behavior, nextTarget, stepYesLabel), 50);
             });
 
             // Falling Bouquet Step
@@ -1715,7 +1742,7 @@
         let stateGuiltIndicesApp = {};
         let stateTeleportCountsApp = {};
 
-        function attachBehaviorEventsApp(stepNum, behavior, nextTarget) {
+        function attachBehaviorEventsApp(stepNum, behavior, nextTarget, stepYesLabel) {
             const noBtn = document.getElementById(\`btn-no-\${stepNum}\`);
             const yesBtn = document.getElementById(\`btn-yes-\${stepNum}\`);
             if (!noBtn) return;
@@ -1758,13 +1785,15 @@
                     moveButtonInsideCardApp(noBtn);
                 };
             } else if (behavior === 'loading') {
+                const stepObj = steps[stepNum - 1];
+                const activeNoVal = (stepObj && stepObj.noText && stepObj.noText.trim() !== '') ? stepObj.noText : defaultNoText;
                 noBtn.onclick = () => {
                     noBtn.disabled = true;
                     noBtn.innerHTML = \`<i class="fa-solid fa-spinner fa-spin mr-1"></i> Checking...\`;
                     setTimeout(() => {
                         showPopupWarning(\`btn-no-wrapper-\${stepNum}\`);
                         alert("Error 404: 'No' is not available. Server says you must click Yes!");
-                        noBtn.innerHTML = noText;
+                        noBtn.innerHTML = activeNoVal;
                         noBtn.disabled = false;
                     }, 1200);
                 };
@@ -1780,7 +1809,7 @@
                         noBtn.innerText = guiltTexts[idx];
                         stateGuiltIndicesApp[stepNum]++;
                     } else {
-                        noBtn.innerText = yesText;
+                        noBtn.innerText = stepYesLabel;
                         noBtn.style.background = yesBg;
                         noBtn.style.color = yesColor;
                         noBtn.onclick = () => nextStep(nextTarget);
